@@ -1,0 +1,1 @@
+﻿Get-Process | Sort-Object -Property CPU | Select-Object -Last 10 | Sort-Object -Property ProcessName | Out-File -FilePath "C:\ta.txt"

@@ -1,0 +1,26 @@
+---
+
+- name: install git to cashbox
+  hosts: [test]
+  become: yes
+
+  tasks:
+
+    - name: edit dns
+      shell: sed -i 's/.*82.209.218.172 178.124.194.126.*/dns-nameservers 8.8.8.8/' /etc/network/interfaces
+
+
+    - name: restart network
+      shell: ifdown enp0s7 && ifup enp0s7
+
+    - name: sleep
+      shell: sleep 1m
+
+    - name: update packeges
+      shell: apt update -y
+
+    - name: install git
+      shell: apt-get install git -y
+
+    - name: edit dns
+      shell: sed -i 's/.*dns-nameservers 8.8.8.8.*/dns-nameservers 82.209.218.172 178.124.194.126/' /etc/network/interfaces

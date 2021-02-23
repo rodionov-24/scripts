@@ -1,0 +1,1 @@
+﻿Get-EventLog 'Security' -Newest 20 | Out-File C:\task1.txt 

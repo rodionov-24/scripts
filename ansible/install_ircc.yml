@@ -1,0 +1,27 @@
+---
+
+- name: install iretailcc to cashbox
+  hosts: [fit30kass02]
+  become: yes
+
+  tasks:
+
+    - name: copy deb
+      copy: src=/etc/ansible/file/iRetailCloudClient.deb dest=/farmin/install
+
+    - name: install ircc
+      shell: cd /farmin/install && dpkg -i iRetailCloudClient.deb
+
+    - name: links
+      shell: cd /bin/ && ln -s /usr/local/bin/iRetailCloudClient iRetailCloudClient
+
+    - name: install
+      shell: iRetailCloudClient --install
+
+    - name: enable service
+      shell: systemctl enable iretailcc
+
+    - name: copy cfg and tasks
+      copy: src=/etc/ansible/file/production.properties dest=/itpharma/iretailcloudclient/config/
+      copy: src=/etc/ansible/file/iRetailPOSUpdater.json dest=/itpharma/iretailcloudclient/tasks/
+      copy: src=/etc/ansible/file/iRetailManagementUpdater.json dest=/itpharma/iretailcloudclient/tasks/

@@ -1,0 +1,1 @@
+﻿Get-Process | Sort-Object -Property CPU | Select-Object -Last 6 | Sort-Object -Property ProcessName

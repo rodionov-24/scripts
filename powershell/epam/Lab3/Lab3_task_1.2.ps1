@@ -1,0 +1,1 @@
+﻿Get-Process | Where-Object {$_.CPU -gt '0,1'} | Out-GridView

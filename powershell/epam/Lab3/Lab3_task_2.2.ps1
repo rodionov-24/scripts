@@ -1,0 +1,1 @@
+﻿Get-Service | Sort-Object name | Format-Table {$_.Site, $_.MachineName, $_.ServiceType, $_.DisplayName}

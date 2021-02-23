@@ -1,0 +1,118 @@
+---
+
+- name: install iRetailCloudServer
+  hosts: [test]
+  become: yes
+
+  tasks:
+
+     - name: update system
+       shell: apt-get update
+
+     - name: install redis-server
+       shell: apt-get install redis-server -y
+
+     - name: edit cfg redis
+       shell: sed -i 's/.*daemonize no.*/daemonize yes/' /etc/redis/redis.conf && sed -i 's/.*loglevel notice.*/loglevel warning/' /etc/redis/redis.conf && sed -i 's/.*save 900 1.*/#save 900 1/' /etc/redis/redis.conf && sed -i 's/.*save 300 10.*/#save 300 10/' /etc/redis/redis.conf && sed -i 's/.*save 60.*/#save 10000/' /etc/redis/redis.conf
+
+     - name: enable service redis
+       shell: systemctl start redis-server&&systemctl enable redis-server
+
+     - name: add key mongo  
+       shell: curl -fsSL https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add
+
+     - name: apt_repository
+       shell: echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+  
+     - name: update
+       shell: apt-get update
+
+     - name: install mongo
+       shell: apt-get install -y mongodb-org
+      
+     - name: enable mongo
+       shell: systemctl start mongod&&systemctl enable mongod
+
+     - name: create time folder
+       shell: echo "d /var/run/mongodb 0755 mongodb mongodb" | tee -a /etc/tmpfiles.d/mongodb.conf && systemd-tmpfiles --create mongodb.conf
+ 
+     - name: settings limits
+       shell: ulimit -f unlimited && ulimit -t unlimited && ulimit -v unlimited && ulimit -l unlimited && ulimit -n 64000 && ulimit -m unlimited
+  
+     - name: create mongo-key
+       shell: mkdir /itpharma/&&chmod 0777 -R /itpharma/&&chown pharma:pharma -R /itpharma/&&openssl rand -base64 741 -out /itpharma/mongodb-keyfile&&chmod 0600 /itpharma/mongodb-keyfile&&chown pharma:pharma /itpharma/mongodb-keyfile
+ 
+     - name: install nodejs
+       shell: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && apt install nodejs -y
+
+     - name: folder
+       shell: mkdir /var/run/iretailcs && mkdir /var/run/iretailcs/cache && mkdir /itpharma/tasks
+
+     - name: info in folder
+       shell: echo "d /var/run/iretailcs 0777 pharma pharma" | tee -a /etc/tmpfiles.d/iretailcs.conf && echo d /var/run/iretailcs/cache 0777 pharma pharma | tee -a /etc/tmpfiles.d/iretailcs.conf && systemd-tmpfiles --create iretailcs.conf
+
+     - name: up timeout
+       shell: mount -o remount,size=2G /run
+
+     - name: install product iretail
+       copy: src=/etc/ansible/file/iRetail/iRetailCloudServer.tar.gz dest=/itpharma
+          
+     - name: unzip    
+       shell: cd /itpharma && tar --strip-components 1 -xvf iRetailCloudServer.tar.gz -C /
+        
+     - name: link
+       shell: ln -s /usr/local/bin/iRetailCloudServer iRetailCloudServer && ln -s /usr/local/bin/node node && ln -s /usr/local/bin/npm npm
+
+     - name: install iretailcloudserver
+       shell: iRetailCloudServer --install&&systemctl enable iretailcs
+
+     - name: links
+       shell: cd /bin/ && ln -s /usr/local/bin/iRetailCloudServer iRetailCloudServer
+
+     - name: disable firewal
+       shell: ufw disable
+
+     - name: copy deb
+       copy: src=/etc/ansible/file/iRetail/iRetailCloudClient.deb dest=/itpharma
+
+     - name: install ircc
+       shell: cd /itpharma && dpkg -i iRetailCloudClient.deb
+
+     - name: links
+       shell: cd /bin/ && ln -s /usr/local/bin/iRetailCloudClient iRetailCloudClient
+
+     - name: install client
+       shell: cd /itpharma/iretailcloudclient && iRetailCloudClient --install
+
+     - name: enable service client
+       shell: systemctl enable iretailcc
+       
+     - name: add task to cron
+       shell: (crontab -l; echo "*/10 * * * * /bin/bash /itpharma/tasks/iRetailCloudClientController.sh" ) | crontab -
+       shell: (crontab -l; echo " 0 21 * * * /bin/bash /itpharma/tasks/backup.sh" ) | crontab -
+       shell: (crontab -l; echo "*/10 * * * * /bin/bash /itpharma/tasks/iRetailCloudServerController.sh" ) | crontab -
+
+
+     - name: del file itpharma
+       shell: cd /itpharma && rm -rf iRetailCloudClient.deb && rm -rf iRetailCloudServer.tar.gz
+
+     - name: copy tasks
+       copy: src=/etc/ansible/file/iRetail/iRetailCloudClientController.sh dest=/itpharma/tasks
+ 
+     - name: copy sh
+       copy: src=/etc/ansible/file/iRetail/iRetailCloudServerController.sh dest=/itpharma/tasks
+
+     - name: copy damp
+       copy: src=/etc/ansible/file/iRetail/iRetailCloud.tar.gz dest=/itpharma
+       
+     - name: copy backup
+       copy: src=/etc/ansible/file/iRetail/backup.sh dest=/itpharma/tasks
+
+     - name: tasks for update
+       copy: src=/etc/ansible/file/iRetail/IRCSUpdater.json dest=/itpharma/iretailcloudclient/tasks
+
+     - name: tasks for ircc
+       copy: src=/etc/ansible/file/iRetail/ICCUpdater.json dest=/itpharma/iretailcloudclient/tasks
+
+
+         

@@ -1,0 +1,1 @@
+[math]::round((Get-ChildItem  "C:\scripts\computers.txt").length / 1gb)

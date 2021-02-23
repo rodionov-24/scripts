@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Licenses><License><![CDATA[CPU sockets (Hyper-V)=9999
+CPU sockets (vSphere)=9999
+Company=Veeam Software AG
+Description=Copyright 2017 Veeam, Inc. All Rights Reserved. The Software Product is protected by copyright and other intellectual property laws and treaties. Veeam or its suppliers own the title, copyright, and other intellectual property rights in the Software Product. Veeam reserves all rights not expressly granted to you in EULA. The Software Product is licensed, not sold. Veeam grants to you a nonexclusive nontransferable license to use the Software Product, provided that you agree with EULA.
+E-mail=timashev@veeam.com
+Edition=Enterprise Plus
+Expiration date=31/12/2099
+First name=Ratmir
+Last name=Timashev
+License information=License type:\tPerpetual\nLicensed to:\tVeeam Software AG\nContact person:\tRatmir Timashev\nCPU sockets (vSphere):\t9999\nCPU sockets (Hyper-V):\t9999\nEdition:       \tEnterprise Plus
+License type=Perpetual
+Product=Veeam Backup and Replication
+Support expiration date=31/12/2099
+Version=9.x
+Signature=6D7E20E82119852FCCEA3F553EDF7FF5F746CEC192527167CDF4C671AF7B9D7A309C5A325595E1197714E38315E9FC1C7C2E129C2390C23A9117028C5FC8B31F540AF3666D814B7F314843AEC622771F1E671F3F250D800504EEE9C62055A6C59867BA0CB7CBC607ED5DA62323DEE6C38A5889BDD62A99E2230D0FF9472B1884
+]]></License></Licenses>

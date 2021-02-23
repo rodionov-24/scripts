@@ -1,0 +1,1 @@
+﻿Get-Process | Measure-Object –property VM –average –sum –minimum –maximum

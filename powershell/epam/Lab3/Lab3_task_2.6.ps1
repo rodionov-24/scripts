@@ -7,7 +7,7 @@ if ($_.LastLogon -lt $dat)
 }
 else
 {
-    Write-Host $_.LastLogon -ForegroundColor Green
+    Write-Host $_.LastLogon $_.Name -ForegroundColor Green
 }
 
 }

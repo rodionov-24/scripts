@@ -1,0 +1,61 @@
+image: docker:latest
+variables:
+  REPOSITORY_URL: 085907224464.dkr.ecr.eu-central-1.amazonaws.com/klika-tech/office
+  AWS_DEFAULT_REGION: eu-central-1
+  CLUSTER_NAME: Klika-Tech
+  SERVICE_NAME: Office-Map-QA
+  TASK_DEFINTION_NAME: office-map-qa
+  TIMEOUT: 300
+  IMAGE: $REPOSITORY_URL
+services:
+  - docker:dind
+before_script:
+  - apk add --no-cache bash
+  - apk add --no-cache curl jq aws-cli
+  - apk add --no-cache git
+  - curl --version
+  - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+  - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+  - aws configure set region $AWS_DEFAULT_REGION
+  - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URL
+  - export IMAGE_TAG="$CI_COMMIT_SHORT_SHA-$CI_COMMIT_REF_SLUG"
+ 
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - rm -rf src/config/config.js
+    - mv src/config/config-QA.js src/config/config.js
+    - cp config/qa.json config/production.json
+    - cp config/qa.json config/development.json
+    - mv src/constants/common-QA.js src/constants/common.js
+    - mv config/nginx.qa.conf config/nginx.prod.conf
+    - echo "Start build"
+    - docker build --no-cache -t $REPOSITORY_URL:latest . || exit 1
+    - echo "Start tag"
+    - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG || exit 1
+    - echo "Start push image"
+    - docker push $REPOSITORY_URL:latest || exit 1
+    - docker push $REPOSITORY_URL:$IMAGE_TAG || exit 1
+
+  only:
+    - gitlab-ci/cd-test
+
+  tags:
+    - shared
+    - klika-tech
+
+deploy:
+  stage: deploy
+  script:
+    - curl https://raw.githubusercontent.com/silinternational/ecs-deploy/master/ecs-deploy | tee /usr/bin/ecs-deploy
+    - chmod +x /usr/bin/ecs-deploy
+    - cd /usr/bin
+    - ./ecs-deploy -k ${AWS_ACCESS_KEY_ID} -s ${AWS_SECRET_ACCESS_KEY} -r ${AWS_DEFAULT_REGION} -c Klika-Tech -n Office-Map-QA -m 0 -t 240 -i $REPOSITORY_URL:$latest  
+ 
+  tags:
+    - shared
+    - klika-tech
